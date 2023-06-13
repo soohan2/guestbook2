@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <th:block th:replace="~{/layout/basic :: setContent(~{this::content})}">
+    <th:block th:fragment="content">
+      <h1 class="mt-4">Guest List Page
+        <a th:href="@{/guestbook/register}">
+          <button type="button" class="btn btn-outline-primary">REGISTER</button>
+        </a>
+      </h1>
+      <form action="/guestbook/list" method="get" id="searchForm">
+        <div class="input-group">
+          <input type="hidden" name="page" th:value="1">
+          <div class="input-group-sm">
+            <select class="form-select-sm" name="type">
+              <option th:selected="${pageRequestDTO.type == null}">------------</option>
+              <option th:selected="${pageRequestDTO.type == 't'}" value="t">제목</option>
+              <option th:selected="${pageRequestDTO.type == 'c'}" value="c">내용</option>
+              <option th:selected="${pageRequestDTO.type == 'w'}" value="w">작성자</option>
+              <option th:selected="${pageRequestDTO.type == 'tc'}" value="tc">제목 + 내용</option>
+              <option th:selected="${pageRequestDTO.type == 'tcw'}" value="tcw">제목 + 내용 + 작성자</option>
+            </select>
+          </div>
+          <input class="form-control-sm" name="keyword" th:value="${pageRequestDTO.keyword}">
+          <div class="input-group-sm" id="button-addon4">
+            <button class="btn btn-outline-secondary btn-search">Search</button>
+            <button class="btn btn-outline-secondary btn-clear">Clear</button>
+          </div>
+        </div>
+      </form>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">number</th>
+            <th scope="col">Title</th>
+            <th scope="col">Writer</th>
+            <th scope="col">RegDate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="dto : ${result.dtoList}">
+            <th scope="row">
+              <a th:href="@{/guestbook/read(gno=${dto.gno}, page=${result.page}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}">
+                [[${dto.gno}]]
+              </a>
+            </th>
+            <td>[[${dto.title}]]</td>
+            <td>[[${dto.writer}]]</td>
+            <td>[[${#temporals.format(dto.regDate, 'yyyy/MM/dd')}]]</td>
+          </tr>
+        </tbody>
+      </table>
+      <ul class="pagination h-100 justify-content-center align-items-center">
+        <li class="page-item" th:if="${result.prev}">
+          <a class="page-link" th:href="@{/guestbook/list(page=${result.start - 1}, size=${result.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}" tabindex="-1">Previous</a>
+        </li>
+        <li th:class="'page-item ' + ${result.page == page?'active':''}" th:each="page: ${result.pageList}">
+          <a class="page-link" th:href="@{/guestbook/list(page=${page}, size=${result.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}">[[${page}]]</a>
+        </li>
+        <li class="page-item" th:if="${result.next}">
+          <a class="page-link" th:href="@{/guestbook/list(page=${result.end + 1}, size=${result.size}, type=${pageRequestDTO.type}, keyword=${pageRequestDTO.keyword})}">Next</a>
+        </li>
+      </ul>
+      <div class="modal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">[[${msg}]]</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="$('.modal').hide()"></button>
+            </div>
+            <div class="modal-body">
+              <p>Registered successfully.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="$('.modal').hide()">CONFIRM</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script th:inline="javascript">
+        var msg = [[${msg}]];
+        console.log(msg);
+        if(msg){
+          $(".modal").show();
+        }
+        var searchForm = $("#searchForm");
+        $(".btn-search").click(function () {
+          searchForm.submit();
+        });
+
+        $(".btn-clear").click(function () {
+          searchForm.empty().submit();
+        });
+      </script>
+    </th:block>
+  </th:block>
+</html>
+
+
